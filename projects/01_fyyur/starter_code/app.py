@@ -2,6 +2,7 @@
 # Imports
 #----------------------------------------------------------------------------#
 
+from audioop import add
 import json
 import dateutil.parser
 import babel
@@ -43,8 +44,8 @@ class Venue(db.Model):
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
     website_link = db.Column(db.String(120))
-    talent_search = db.Column(db.Boolean())
-    description = db.Column(db.String(500))
+    seeking_talent = db.Column(db.Boolean())
+    seeking_description = db.Column(db.String(500))
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
@@ -59,8 +60,8 @@ class Artist(db.Model):
     address = db.Column(db.String(250))
     phone = db.Column(db.String(120))
     genres = db.Column(db.ARRAY(db.String(120)))
-    description = db.Column(db.String(500))
-    talent_search = db.Column(db.Boolean())
+    seeking_description = db.Column(db.String(500))
+    seeking_talent = db.Column(db.Boolean())
     website_link = db.Column(db.String(200))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
@@ -249,7 +250,28 @@ def create_venue_form():
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
     # TODO: insert form data as a new Venue record in the db, instead
+    name = request.form.get('name')
+    city = request.form.get('city')
+    state = request.form.get('state')
+    address = request.form.get('address')
+    phone = request.form.get('phone')
+    image_link = request.form.get('image_link')
+    genres = request.form.get('genres')
+    facebook_link = request.form.get('facebook_link')
+    website_link = request.form.get('website_link')
+
+    seeking_description = request.form.get('seeking_description')
+    if request.form.get('seeking_talent') == 'y':
+        seeking_talent = True
+
+    else:
+        seeking_talent = False
+
     # TODO: modify data to be the data object returned from db insertion
+    venueData = Venue(name=name, city=city, state=state, address=address, phone=phone, image_link=image_link, genres=genres,
+                      facebook_link=facebook_link, website_link=website_link, seeking_description=seeking_description, seeking_talent=seeking_talent)
+    db.session.add(venueData)
+    db.session.commit()
 
     # on successful db insert, flash success
     flash('Venue ' + request.form['name'] + ' was successfully listed!')
@@ -265,7 +287,7 @@ def delete_venue(venue_id):
     # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
 
     # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
-    # clicking that button delete it from the db then redirect the user to the homepage
+    # licking that button delete it from the db then redirect the user to the homepage
     return None
 
 #  Artists
@@ -456,12 +478,33 @@ def create_artist_form():
 def create_artist_submission():
     # called upon submitting the new artist listing form
     # TODO: insert form data as a new Venue record in the db, instead
-    # TODO: modify data to be the data object returned from db insertion
+    name = request.form.get('name')
+    city = request.form.get('city')
+    state = request.form.get('state')
+    address = request.form.get('address')
+    phone = request.form.get('phone')
+    image_link = request.form.get('image_link')
+    genres = request.form.get('genres')
+    facebook_link = request.form.get('facebook_link')
+    website_link = request.form.get('website_link')
 
-    # on successful db insert, flash success
+    seeking_description = request.form.get('seeking_description')
+    if request.form.get('seeking_talent') == 'y':
+        seeking_talent = True
+
+    else:
+        seeking_talent = False
+
+    # TODO: modify data to be the data object returned from db insertion
+    artistData = Artist(name=name, city=city, state=state, address=address, phone=phone, image_link=image_link, genres=genres,
+                        facebook_link=facebook_link, website_link=website_link, seeking_description=seeking_description, seeking_talent=seeking_talent)
+    db.session.add(artistData)
+    db.session.commit()
+
+# on successful db insert, flash success
     flash('Artist ' + request.form['name'] + ' was successfully listed!')
-    # TODO: on unsuccessful db insert, flash an error instead.
-    # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
+# TODO: on unsuccessful db insert, flash an error instead.
+# e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
     return render_template('pages/home.html')
 
 
