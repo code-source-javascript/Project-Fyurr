@@ -3,6 +3,7 @@
 #----------------------------------------------------------------------------#
 
 import json
+from ntpath import join
 import dateutil.parser
 import babel
 from flask import Flask, render_template, request, Response, flash, redirect, url_for
@@ -79,9 +80,12 @@ class Show(db.Model):
     __tablename__ = 'Show'
 
     id = db.Column(db.Integer, primary_key=True)
-    artist = db.Column(db.Integer, db.ForeignKey("Artist.id"))
-    venue = db.Column(db.Integer, db.ForeignKey("Venue.id"))
+    artist_id = db.Column(db.Integer, db.ForeignKey("Artist.id"))
+    venue_id = db.Column(db.Integer, db.ForeignKey("Venue.id"))
     start_time = db.Column(db.DateTime())
+
+    def __repr__(self):
+        return f'< id: {self.id} , artist_id:{self.artist_id},venue_id:{self.venue_id}, start_time:{self.start_time} >'
 
 #----------------------------------------------------------------------------#
 # Filters.
@@ -116,30 +120,8 @@ def index():
 def venues():
     # TODO: replace with real venues data.
     #       num_upcoming_shows should be aggregated based on number of upcoming shows per venue.
-    data = [{
-        "city": "San Francisco",
-        "state": "CA",
-        "venues": [{
-            "id": 1,
-            "name": "The Musical Hop",
-            "num_upcoming_shows": 0,
-        }, {
-            "id": 3,
-            "name": "Park Square Live Music & Coffee",
-            "num_upcoming_shows": 1,
-        }]
-    }, {
-        "city": "New York",
-        "state": "NY",
-        "venues": [{
-            "id": 2,
-            "name": "The Dueling Pianos Bar",
-            "num_upcoming_shows": 0,
-        }]
-    }]
-    venue = Venue.query.all()
-    print(venue)
-    return render_template('pages/venues.html', areas=venue)
+    data = Venue.query.all()
+    return render_template('pages/venues.html', areas=data)
 
 
 @app.route('/venues/search', methods=['POST'])
@@ -259,9 +241,9 @@ def show_artist(artist_id):
 @app.route('/artists/<int:artist_id>/edit', methods=['GET'])
 def edit_artist(artist_id):
     form = ArtistForm()
-    artist = artist = Artist.query.filter_by(id=artist_id).first()
+    data = Artist.query.filter_by(id=artist_id).first()
     # TODO: populate form with fields from artist with ID <artist_id>
-    return render_template('forms/edit_artist.html', form=form, artist=artist)
+    return render_template('forms/edit_artist.html', form=form, artist=data)
 
 
 @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
@@ -275,9 +257,9 @@ def edit_artist_submission(artist_id):
 @app.route('/venues/<int:venue_id>/edit', methods=['GET'])
 def edit_venue(venue_id):
     form = VenueForm()
-    venue = Venue.query.filter_by(id=venue_id).first()
+    data = Venue.query.filter_by(id=venue_id).first()
     # TODO: populate form with values from venue with ID <venue_id>
-    return render_template('forms/edit_venue.html', form=form, venue=venue)
+    return render_template('forms/edit_venue.html', form=form, venue=data)
 
 
 @app.route('/venues/<int:venue_id>/edit', methods=['POST'])
@@ -337,43 +319,14 @@ def create_artist_submission():
 def shows():
     # displays list of shows at /shows
     # TODO: replace with real venues data.
-    data = [{
-        "venue_id": 1,
-        "venue_name": "The Musical Hop",
-        "artist_id": 4,
-        "artist_name": "Guns N Petals",
-        "artist_image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80",
-        "start_time": "2019-05-21T21:30:00.000Z"
-    }, {
-        "venue_id": 3,
-        "venue_name": "Park Square Live Music & Coffee",
-        "artist_id": 5,
-        "artist_name": "Matt Quevedo",
-        "artist_image_link": "https://images.unsplash.com/photo-1495223153807-b916f75de8c5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=334&q=80",
-        "start_time": "2019-06-15T23:00:00.000Z"
-    }, {
-        "venue_id": 3,
-        "venue_name": "Park Square Live Music & Coffee",
-        "artist_id": 6,
-        "artist_name": "The Wild Sax Band",
-        "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
-        "start_time": "2035-04-01T20:00:00.000Z"
-    }, {
-        "venue_id": 3,
-        "venue_name": "Park Square Live Music & Coffee",
-        "artist_id": 6,
-        "artist_name": "The Wild Sax Band",
-        "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
-        "start_time": "2035-04-08T20:00:00.000Z"
-    }, {
-        "venue_id": 3,
-        "venue_name": "Park Square Live Music & Coffee",
-        "artist_id": 6,
-        "artist_name": "The Wild Sax Band",
-        "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
-        "start_time": "2035-04-15T20:00:00.000Z"
-    }]
-    return render_template('pages/shows.html', shows=data)
+
+    # show_venue_join = db.session.query(Show, Artist, Venue).outerjoin(
+    #     Artist, Show.artist_id == Artist.id).outerjoin(Venue, Show.venue_id == Venue.id).all()
+    # print(show_venue_join)
+
+    show = Show.query.all()
+
+    return render_template('pages/shows.html', shows=show)
 
 
 @app.route('/shows/create')
@@ -386,7 +339,14 @@ def create_shows():
 @app.route('/shows/create', methods=['POST'])
 def create_show_submission():
     # called to create new shows in the db, upon submitting new show listing form
+    venue = request.form.get('venue_id')
+    artist = request.form.get('artist_id')
+    start = request.form.get('start_time')
+
     # TODO: insert form data as a new Show record in the db, instead
+    show = Show(venue_id=venue, artist_id=artist, start_time=start)
+    db.session.add(show)
+    db.session.commit()
     # on successful db insert, flash success
     flash('Show was successfully listed!')
     # TODO: on unsuccessful db insert, flash an error instead.
