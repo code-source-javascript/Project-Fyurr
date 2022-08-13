@@ -123,7 +123,8 @@ def index():
 def venues():
     # TODO: replace with real venues data.
     #       num_upcoming_shows should be aggregated based on number of upcoming shows per venue.
-    data = Venue.query.all()
+
+    data = Venue.query.group_by(Venue.id, Venue.city, Venue.state).all()
     return render_template('pages/venues.html', areas=data)
 
 
@@ -331,14 +332,14 @@ def shows():
     return render_template('pages/shows.html', shows=show_venue_join,)
 
 
-@app.route('/shows/create')
+@ app.route('/shows/create')
 def create_shows():
     # renders form. do not touch.
     form = ShowForm()
     return render_template('forms/new_show.html', form=form)
 
 
-@app.route('/shows/create', methods=['POST'])
+@ app.route('/shows/create', methods=['POST'])
 def create_show_submission():
     # called to create new shows in the db, upon submitting new show listing form
     venue = request.form.get('venue_id')
@@ -357,12 +358,12 @@ def create_show_submission():
     return render_template('pages/home.html')
 
 
-@app.errorhandler(404)
+@ app.errorhandler(404)
 def not_found_error(error):
     return render_template('errors/404.html'), 404
 
 
-@app.errorhandler(500)
+@ app.errorhandler(500)
 def server_error(error):
     return render_template('errors/500.html'), 500
 
