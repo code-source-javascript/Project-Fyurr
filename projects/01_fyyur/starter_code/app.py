@@ -93,7 +93,10 @@ class Show(db.Model):
 
 
 def format_datetime(value, format='medium'):
-    date = dateutil.parser.parse(value)
+    if isinstance(value, str):
+        date = dateutil.parser.parse(value)
+    else:
+        date = value
     if format == 'full':
         format = "EEEE MMMM, d, y 'at' h:mma"
     elif format == 'medium':
@@ -320,13 +323,12 @@ def shows():
     # displays list of shows at /shows
     # TODO: replace with real venues data.
 
-    # show_venue_join = db.session.query(Show, Artist, Venue).outerjoin(
-    #     Artist, Show.artist_id == Artist.id).outerjoin(Venue, Show.venue_id == Venue.id).all()
-    # print(show_venue_join)
+    show_venue_join = db.session.query(Show.artist_id, Show.venue_id, Show.start_time, Artist.name, Artist.image_link, Venue.name).join(
+        Artist, Show.artist_id == Artist.id).join(Venue, Show.venue_id == Venue.id).all()
 
-    show = Show.query.all()
+    print(show_venue_join)
 
-    return render_template('pages/shows.html', shows=show)
+    return render_template('pages/shows.html', shows=show_venue_join,)
 
 
 @app.route('/shows/create')
