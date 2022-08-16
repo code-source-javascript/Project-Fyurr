@@ -4,10 +4,9 @@
 
 import json
 from ntpath import join
-from os import abort
 import dateutil.parser
 import babel
-from flask import Flask, render_template, request, Response, flash, redirect, url_for
+from flask import Flask, render_template, request, Response, flash, redirect, url_for, abort
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
 import logging
@@ -132,7 +131,7 @@ def venues():
         error = True
     finally:
         if error:
-            abort(400)
+            return abort(500)
         else:
             return render_template('pages/venues.html', areas=data)
 
@@ -165,7 +164,7 @@ def show_venue(venue_id):
         error = True
     finally:
         if error:
-            abort(400)
+            return abort(500)
         else:
             return render_template('pages/show_venue.html', venue=data)
 
@@ -215,7 +214,7 @@ def create_venue_submission():
         error = True
     finally:
         if error:
-            abort(400)
+            return abort(500)
         else:
             flash('Venue ' + request.form['name'] +
                   ' was successfully listed!')
@@ -238,7 +237,7 @@ def delete_venue(venue_id):
         error = True
     finally:
         if error:
-            abort(400)
+            return abort(500)
         else:
             return redirect(url_for('venue'))
 
@@ -258,7 +257,7 @@ def artists():
         error = True
     finally:
         if error:
-            abort(400)
+            return abort(500)
         else:
             return render_template('pages/artists.html', artists=data)
 
@@ -291,7 +290,7 @@ def show_artist(artist_id):
         error = True
     finally:
         if error:
-            abort(400)
+            return abort(500)
         else:
             return render_template('pages/show_artist.html', artist=data)
 
@@ -364,16 +363,16 @@ def create_artist_submission():
             seeking_talent = False
 
         # TODO: modify data to be the data object returned from db insertion
-        artistData = Artist(name=name, city=city, state=state, address=address, phone=phone, image_link=image_link, genres=genres,
+        data = Artist(name=name, city=city, state=state, address=address, phone=phone, image_link=image_link, genres=genres,
                             facebook_link=facebook_link, website_link=website_link, seeking_description=seeking_description, seeking_talent=seeking_talent)
-        db.session.add(artistData)
+        db.session.add(data)
         db.session.commit()
     except:
         db.session.rollback()
         error = True
     finally:
         if error:
-            abort(400)
+            return abort(500)
         else:
             # on successful db insert, flash success
             flash('Artist ' + request.form['name'] +
@@ -401,7 +400,7 @@ def shows():
         error = True
     finally:
         if error:
-            abort(400)
+            return abort(500)
         else:
             return render_template('pages/shows.html', shows=data)
 
@@ -417,22 +416,22 @@ def create_shows():
 def create_show_submission():
     # called to create new shows in the db, upon submitting new show listing form
     data = {}
-    error = True
+    error = False
     try:
         venue = request.form.get('venue_id')
         artist = request.form.get('artist_id')
         start = request.form.get('start_time')
 
         # TODO: insert form data as a new Show record in the db, instead
-        show = Show(venue_id=venue, artist_id=artist, start_time=start)
-        db.session.add(show)
+        data = Show(venue_id=venue, artist_id=artist, start_time=start)
+        db.session.add(data)
         db.session.commit()
     except:
         db.session.rollback()
         error = True
     finally:
         if error:
-            abort(400)
+            return abort(500)
         else:
             # on successful db insert, flash success
             flash('Show was successfully listed!')
