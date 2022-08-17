@@ -46,6 +46,7 @@ class Venue(db.Model):
     website_link = db.Column(db.String(120))
     seeking_talent = db.Column(db.Boolean())
     seeking_description = db.Column(db.String(500))
+    shows = db.relationship('Show', backref='venue', lazy=True)
 
     def __repr__(self):
         return f'< id: {self.id} , name:{self.name},genres:{self.genres}, city:{self.city}, state:{self.state}, seeking_talent:{self.seeking_talent} >'
@@ -68,6 +69,7 @@ class Artist(db.Model):
     website_link = db.Column(db.String(200))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
+    shows = db.relationship('Show', backref='Artist', lazy=True)
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
     def __repr__(self):
@@ -80,8 +82,9 @@ class Show(db.Model):
     __tablename__ = 'Show'
 
     id = db.Column(db.Integer, primary_key=True)
-    artist_id = db.Column(db.Integer, db.ForeignKey("Artist.id"))
-    venue_id = db.Column(db.Integer, db.ForeignKey("Venue.id"))
+    artist_id = db.Column(db.Integer, db.ForeignKey(
+        "Artist.id"), nullable=False)
+    venue_id = db.Column(db.Integer, db.ForeignKey("Venue.id"), nullable=False)
     start_time = db.Column(db.DateTime())
 
     def __repr__(self):
@@ -364,7 +367,7 @@ def create_artist_submission():
 
         # TODO: modify data to be the data object returned from db insertion
         data = Artist(name=name, city=city, state=state, address=address, phone=phone, image_link=image_link, genres=genres,
-                            facebook_link=facebook_link, website_link=website_link, seeking_description=seeking_description, seeking_talent=seeking_talent)
+                      facebook_link=facebook_link, website_link=website_link, seeking_description=seeking_description, seeking_talent=seeking_talent)
         db.session.add(data)
         db.session.commit()
     except:
