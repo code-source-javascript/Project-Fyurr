@@ -4,6 +4,7 @@
 
 import json
 from ntpath import join
+import sys
 import dateutil.parser
 import babel
 from flask import Flask, render_template, request, Response, flash, redirect, url_for, abort
@@ -137,28 +138,6 @@ def venues():
     error = False
     try:
         data = Venue.query.all()
-        print(Venue.query.all())
-        # data = [{
-        #     "city": "San Francisco",
-        #     "state": "CA",
-        #     "venues": [{
-        #         "id": 1,
-        #         "name": "The Musical Hop",
-        #         "num_upcoming_shows": 0,
-        #     }, {
-        #         "id": 3,
-        #         "name": "Park Square Live Music & Coffee",
-        #         "num_upcoming_shows": 1,
-        #     }]
-        # }, {
-        #     "city": "New York",
-        #     "state": "NY",
-        #     "venues": [{
-        #         "id": 2,
-        #         "name": "The Dueling Pianos Bar",
-        #         "num_upcoming_shows": 0,
-        #     }]
-        # }]
     except:
         error = True
     finally:
@@ -342,8 +321,51 @@ def edit_artist(artist_id):
 def edit_artist_submission(artist_id):
     # TODO: take values from the form submitted, and update existing
     # artist record with ID <artist_id> using the new attributes
+    error = False
+    try:
+        artist = Artist.query.get(artist_id)
+        print(request.form.get('name'))
+        if artist.name != request.form.get('name'):
+            artist.name = request.form.get('name')
 
-    return redirect(url_for('show_artist', artist_id=artist_id))
+        if artist.city != request.form.get('city'):
+            artist.city = request.form.get('city')
+
+        if artist.state != request.form.get('state'):
+            artist.state = request.form.get('state')
+
+        if artist.phone != request.form.get('phone'):
+            artist.phone = request.form.get('phone')
+
+        if artist.genres != request.form.get('genres'):
+            artist.genres = request.form.get('genres')
+
+        if artist.facebook_link != request.form.get('facebook_link'):
+            artist.facebook_link = request.form.get('facebook_link')
+
+        if artist.image_link != request.form.get('image_link'):
+            artist.image_link = request.form.get('image_link')
+
+        if artist.website_link != request.form.get('website_link'):
+            artist.website_link = request.form.get('website_link')
+
+        if artist.seeking_venue != request.form.get('seeking_venue'):
+            artist.seeking_venue = request.form.get('seeking_venue')
+
+        if artist.seeking_description != request.form.get('seeking_description'):
+            artist.seeking_description = request.form.get(
+                'seeking_description')
+        db.session.commit()
+    except:
+        db.session.rollback()
+        print(sys.exc_info())
+        error = True
+    finally:
+        db.session.close()
+        if error:
+            abort(500)
+        else:
+            return redirect(url_for('show_artist', artist_id=artist_id))
 
 
 @app.route('/venues/<int:venue_id>/edit', methods=['GET'])
@@ -358,7 +380,51 @@ def edit_venue(venue_id):
 def edit_venue_submission(venue_id):
     # TODO: take values from the form submitted, and update existing
     # venue record with ID <venue_id> using the new attributes
-    return redirect(url_for('show_venue', venue_id=venue_id))
+    error = False
+    try:
+        venue = Venue.query.get(venue_id)
+        print(venue)
+        if venue.name != request.form.get('name'):
+            venue.name = request.form.get('name')
+
+        if venue.city != request.form.get('city'):
+            venue.city = request.form.get('city')
+
+        if venue.state != request.form.get('state'):
+            venue.state = request.form.get('state')
+
+        if venue.phone != request.form.get('phone'):
+            venue.phone = request.form.get('phone')
+
+        if venue.genres != request.form.get('genres'):
+            venue.genres = request.form.get('genres')
+
+        if venue.facebook_link != request.form.get('facebook_link'):
+            venue.facebook_link = request.form.get('facebook_link')
+
+        if venue.image_link != request.form.get('image_link'):
+            venue.image_link = request.form.get('image_link')
+
+        if venue.website_link != request.form.get('website_link'):
+            venue.website_link = request.form.get('website_link')
+
+        if venue.seeking_venue != request.form.get('seeking_venue'):
+            venue.seeking_venue = request.form.get('seeking_venue')
+
+        if venue.seeking_description != request.form.get('seeking_description'):
+            venue.seeking_description = request.form.get(
+                'seeking_description')
+        db.session.commit()
+    except:
+        db.session.rollback()
+        print(sys.exc_info())
+        error = True
+    finally:
+        db.session.close()
+        if error:
+            abort(500)
+        else:
+            return redirect(url_for('show_venue', venue_id=venue_id))
 
 #  Create Artist
 #  ----------------------------------------------------------------
@@ -401,8 +467,10 @@ def create_artist_submission():
         db.session.commit()
     except:
         db.session.rollback()
+        print(sys.exc_info())
         error = True
     finally:
+        db.session.close()
         if error:
             return abort(500)
         else:
@@ -428,9 +496,9 @@ def shows():
     try:
         data = db.session.query(Show.artist_id, Show.venue_id, Show.start_time, Artist.name, Artist.image_link, Venue.name).join(
             Artist, Show.artist_id == Artist.id).join(Venue, Show.venue_id == Venue.id).all()
-        print(data)
     except:
         error = True
+        print(sys.exc_info())
     finally:
         if error:
             return abort(500)
@@ -461,8 +529,10 @@ def create_show_submission():
         db.session.commit()
     except:
         db.session.rollback()
+        print(sys.exc_info())
         error = True
     finally:
+        db.session.close()
         if error:
             return abort(500)
         else:
