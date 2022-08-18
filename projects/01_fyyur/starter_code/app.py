@@ -73,7 +73,7 @@ class Artist(db.Model):
     phone = db.Column(db.String(120))
     genres = db.Column(db.ARRAY(db.String(120)))
     seeking_description = db.Column(db.String(500))
-    seeking_talent = db.Column(db.Boolean())
+    seeking_venue = db.Column(db.Boolean())
     website_link = db.Column(db.String(200))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
@@ -349,12 +349,17 @@ def edit_artist_submission(artist_id):
         if artist.website_link != request.form.get('website_link'):
             artist.website_link = request.form.get('website_link')
 
-        if artist.seeking_venue != request.form.get('seeking_venue'):
-            artist.seeking_venue = request.form.get('seeking_venue')
+        if request.form.get('seeking_venue') == 'y':
+
+            artist.seeking_venue = True
+
+        else:
+            artist.seeking_venue = False
 
         if artist.seeking_description != request.form.get('seeking_description'):
             artist.seeking_description = request.form.get(
                 'seeking_description')
+
         db.session.commit()
     except:
         db.session.rollback()
@@ -408,8 +413,12 @@ def edit_venue_submission(venue_id):
         if venue.website_link != request.form.get('website_link'):
             venue.website_link = request.form.get('website_link')
 
-        if venue.seeking_venue != request.form.get('seeking_venue'):
-            venue.seeking_venue = request.form.get('seeking_venue')
+        if request.form.get('seeking_talent') == 'y':
+
+            venue.seeking_talent = True
+
+        else:
+            venue.seeking_talent = False
 
         if venue.seeking_description != request.form.get('seeking_description'):
             venue.seeking_description = request.form.get(
@@ -454,15 +463,15 @@ def create_artist_submission():
         website_link = request.form.get('website_link')
 
         seeking_description = request.form.get('seeking_description')
-        if request.form.get('seeking_talent') == 'y':
-            seeking_talent = True
+        if request.form.get('seeking_venue') == 'y':
+            seeking_venue = True
 
         else:
-            seeking_talent = False
+            seeking_venue = False
 
         # TODO: modify data to be the data object returned from db insertion
         data = Artist(name=name, city=city, state=state, address=address, phone=phone, image_link=image_link, genres=genres,
-                      facebook_link=facebook_link, website_link=website_link, seeking_description=seeking_description, seeking_talent=seeking_talent)
+                      facebook_link=facebook_link, website_link=website_link, seeking_description=seeking_description, seeking_venue=seeking_venue)
         db.session.add(data)
         db.session.commit()
     except:
