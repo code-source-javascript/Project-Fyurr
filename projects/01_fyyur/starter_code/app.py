@@ -2,8 +2,7 @@
 # Imports
 #----------------------------------------------------------------------------#
 
-import json
-from ntpath import join
+from operator import length_hint
 import sys
 import dateutil.parser
 import babel
@@ -55,13 +54,6 @@ class Venue(db.Model):
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
 
-# class Area(db.Model):
-#     __tablename__ = 'Area'
-#     city = db.Column(db.String(120), primary_key=True)
-#     state = db.Column(db.String(120), primary_key=True)
-#     venues = db.relationship('Venue', backref='area', lazy=True)
-
-
 class Artist(db.Model):
     __tablename__ = 'Artist'
 
@@ -71,7 +63,7 @@ class Artist(db.Model):
     state = db.Column(db.String(120))
     address = db.Column(db.String(250))
     phone = db.Column(db.String(120))
-    genres = db.Column(db.ARRAY(db.String(120)))
+    genres = db.Column(db.String(120))
     seeking_description = db.Column(db.String(500))
     seeking_venue = db.Column(db.Boolean())
     website_link = db.Column(db.String(200))
@@ -152,15 +144,23 @@ def search_venues():
     # TODO: implement search on venues with partial string search. Ensure it is case-insensitive.
     # seach for Hop should return "The Musical Hop".
     # search for "Music" should return "The Musical Hop" and "Park Square Live Music & Coffee"
-    response = {
-        "count": 1,
-        "data": [{
-            "id": 2,
-            "name": "The Dueling Pianos Bar",
-            "num_upcoming_shows": 0,
-        }]
-    }
-    return render_template('pages/search_venues.html', results=response, search_term=request.form.get('search_term', ''))
+    response = {}
+    error = False
+    try:
+        venueData = Venue.query.filter(Venue.name.like(
+            '%' + request.form.get('search_term')+'%')).all()
+
+        response = {
+            "count": length_hint(venueData),
+            "data": venueData
+        }
+    except:
+        error = True
+    finally:
+        if error:
+            abort(500)
+        else:
+            return render_template('pages/search_venues.html', results=response, search_term=request.form.get('search_term', ''))
 
 
 @app.route('/venues/<int:venue_id>')
@@ -238,7 +238,6 @@ def delete_venue(venue_id):
     # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
     # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
     # licking that button delete it from the db then redirect the user to the homepage
-    data = {}
     error = False
     try:
         Venue.query.filter_by(id=venue_id).delete()
@@ -278,15 +277,23 @@ def search_artists():
     # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
     # seach for "A" should return "Guns N Petals", "Matt Quevado", and "The Wild Sax Band".
     # search for "band" should return "The Wild Sax Band".
-    response = {
-        "count": 1,
-        "data": [{
-            "id": 4,
-            "name": "Guns N Petals",
-            "num_upcoming_shows": 0,
-        }]
-    }
-    return render_template('pages/search_artists.html', results=response, search_term=request.form.get('search_term', ''))
+    error = False
+    response = {}
+    try:
+
+        artistData = Artist.query.filter(Artist.name.like(
+            '%' + request.form.get('search_term')+'%')).all()
+        response = {
+            "count": length_hint(artistData),
+            "data": artistData
+        }
+    except:
+        error = True
+    finally:
+        if error:
+            abort(500)
+        else:
+            return render_template('pages/search_artists.html', results=response, search_term=request.form.get('search_term', ''))
 
 
 @app.route('/artists/<int:artist_id>')
