@@ -63,7 +63,7 @@ class Artist(db.Model):
     state = db.Column(db.String(120))
     address = db.Column(db.String(250))
     phone = db.Column(db.String(120))
-    genres = db.Column(db.String(120))
+    genres = db.Column(db.ARRAY(db.String(120)))
     seeking_description = db.Column(db.String(500))
     seeking_venue = db.Column(db.Boolean())
     website_link = db.Column(db.String(200))
@@ -206,7 +206,7 @@ def create_venue_submission():
         address = request.form.get('address')
         phone = request.form.get('phone')
         image_link = request.form.get('image_link')
-        genres = request.form.get('genres')
+        genres = request.form.getlist('genres')
         facebook_link = request.form.get('facebook_link')
         website_link = request.form.get('website_link')
 
@@ -344,8 +344,8 @@ def edit_artist_submission(artist_id):
         if artist.phone != request.form.get('phone'):
             artist.phone = request.form.get('phone')
 
-        if artist.genres != request.form.get('genres'):
-            artist.genres = request.form.get('genres')
+        if artist.genres != request.form.getlist('genres'):
+            artist.genres = request.form.getlist('genres')
 
         if artist.facebook_link != request.form.get('facebook_link'):
             artist.facebook_link = request.form.get('facebook_link')
@@ -408,8 +408,8 @@ def edit_venue_submission(venue_id):
         if venue.phone != request.form.get('phone'):
             venue.phone = request.form.get('phone')
 
-        if venue.genres != request.form.get('genres'):
-            venue.genres = request.form.get('genres')
+        if venue.genres != request.form.getlist('genres'):
+            venue.genres = request.form.getlist('genres')
 
         if venue.facebook_link != request.form.get('facebook_link'):
             venue.facebook_link = request.form.get('facebook_link')
@@ -465,7 +465,7 @@ def create_artist_submission():
         address = request.form.get('address')
         phone = request.form.get('phone')
         image_link = request.form.get('image_link')
-        genres = request.form.get('genres')
+        genres = request.form.getlist('genres')
         facebook_link = request.form.get('facebook_link')
         website_link = request.form.get('website_link')
 
