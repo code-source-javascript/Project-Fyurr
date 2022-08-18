@@ -54,6 +54,13 @@ class Venue(db.Model):
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
 
+# class Area(db.Model):
+#     __tablename__ = 'Area'
+#     city = db.Column(db.String(120), primary_key=True)
+#     state = db.Column(db.String(120), primary_key=True)
+#     venues = db.relationship('Venue', backref='area', lazy=True)
+
+
 class Artist(db.Model):
     __tablename__ = 'Artist'
 
@@ -129,7 +136,29 @@ def venues():
     data = {}
     error = False
     try:
-        data = Venue.query.group_by(Venue.id, Venue.city, Venue.state).all()
+        data = Venue.query.all()
+        print(Venue.query.all())
+        # data = [{
+        #     "city": "San Francisco",
+        #     "state": "CA",
+        #     "venues": [{
+        #         "id": 1,
+        #         "name": "The Musical Hop",
+        #         "num_upcoming_shows": 0,
+        #     }, {
+        #         "id": 3,
+        #         "name": "Park Square Live Music & Coffee",
+        #         "num_upcoming_shows": 1,
+        #     }]
+        # }, {
+        #     "city": "New York",
+        #     "state": "NY",
+        #     "venues": [{
+        #         "id": 2,
+        #         "name": "The Dueling Pianos Bar",
+        #         "num_upcoming_shows": 0,
+        #     }]
+        # }]
     except:
         error = True
     finally:
@@ -399,6 +428,7 @@ def shows():
     try:
         data = db.session.query(Show.artist_id, Show.venue_id, Show.start_time, Artist.name, Artist.image_link, Venue.name).join(
             Artist, Show.artist_id == Artist.id).join(Venue, Show.venue_id == Venue.id).all()
+        print(data)
     except:
         error = True
     finally:
