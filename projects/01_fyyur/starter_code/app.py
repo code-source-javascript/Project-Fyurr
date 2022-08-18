@@ -49,7 +49,7 @@ class Venue(db.Model):
     shows = db.relationship('Show', backref='venue', lazy=True)
 
     def __repr__(self):
-        return f'< id: {self.id} , name:{self.name},genres:{self.genres}, city:{self.city}, state:{self.state}, seeking_talent:{self.seeking_talent} >'
+        return f'< id: {self.id} , name:{self.name},genres:{self.genres}, city:{self.city}, state:{self.state}, seeking_talent:{self.seeking_talent}  website_link:{self. website_link} >'
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
@@ -216,14 +216,15 @@ def create_venue_submission():
 
         else:
             seeking_talent = False
-            data = Venue(name=name, city=city, state=state, address=address, phone=phone, image_link=image_link, genres=genres,
-                         facebook_link=facebook_link, website_link=website_link, seeking_description=seeking_description, seeking_talent=seeking_talent)
-            db.session.add(data)
-            db.session.commit()
+        data = Venue(name=name, city=city, state=state, address=address, phone=phone, image_link=image_link, genres=genres,
+                     facebook_link=facebook_link, website_link=website_link, seeking_description=seeking_description, seeking_talent=seeking_talent)
+        db.session.add(data)
+        db.session.commit()
     except:
         db.session.rollback()
         error = True
     finally:
+        db.session.close()
         if error:
             return abort(500)
         else:
@@ -246,6 +247,7 @@ def delete_venue(venue_id):
         db.session.rollback()
         error = True
     finally:
+        db.session.close()
         if error:
             return abort(500)
         else:
