@@ -107,13 +107,56 @@ def show_venue(venue_id):
     # shows the venue page with the given venue_id
     # TODO: replace with real venue data from the venues table, using venue_id
     data = {}
+    past_shows = []
+    upcoming_shows = []
     error = False
     try:
-        data = Venue.query.filter_by(id=venue_id).first()
+        venue_shows = db.session.query(Show.artist_id, Show.venue_id, Show.start_time, Artist.name, Artist.image_link, Venue.image_link, Venue.name).join(
+            Artist, Show.artist_id == Artist.id).join(Venue, Show.venue_id == Venue.id).all()
+
+        print(venue_shows)
+
+        for show in venue_shows:
+            if show.start_time < datetime.now():
+                past_shows.append({
+                    "artist_id": show[0],
+                    "artist_name": show[3],
+                    "artist_image_link": show[5],
+                    "start_time": show[2]
+                })
+            else:
+                upcoming_shows.append({
+                    "artist_id": show[0],
+                    "artist_name": show[3],
+                    "artist_image_link": show[5],
+                    "start_time": show[2]
+                })
+
+        venue_data = Venue.query.filter_by(id=venue_id).first()
+
+        data = {
+            "id": venue_data.id,
+            "name": venue_data.name,
+            "genres": venue_data.genres,
+            "city": venue_data.city,
+            "state": venue_data.state,
+            "phone": venue_data.phone,
+            "website": venue_data.website_link,
+            "facebook_link": venue_data.facebook_link,
+            "seeking_talent": venue_data.seeking_talent,
+            "seeking_description": venue_data.seeking_description,
+            "image_link": venue_data.image_link,
+            "past_shows": past_shows,
+            "upcoming_shows": upcoming_shows,
+            "past_shows_count": len(past_shows),
+            "upcoming_shows_count": len(upcoming_shows)
+        }
+
     except:
         error = True
     finally:
         if error:
+            print(sys.exc_info())
             return abort(500)
         else:
             return render_template('pages/show_venue.html', venue=data)
@@ -242,9 +285,45 @@ def show_artist(artist_id):
     # shows the artist page with the given artist_id
     # TODO: replace with real artist data from the artist table, using artist_id
     data = {}
+    past_shows = []
+    upcoming_shows = []
     error = False
     try:
-        data = Artist.query.filter_by(id=artist_id).first()
+        artist_shows = db.session.query(Show.artist_id, Show.venue_id, Show.start_time, Artist.name, Artist.image_link, Venue.image_link, Venue.name).join(
+            Artist, Show.artist_id == Artist.id).join(Venue, Show.venue_id == Venue.id).all()
+        for show in artist_shows:
+            if show.start_time < datetime.now():
+                past_shows.append({"venue_id": show[1],
+                                   "venue_name": show[6],
+                                   "venue_image_link": show[4],
+                                   "start_time": show[2]
+                                   })
+            else:
+                upcoming_shows.append({"venue_id": show[1],
+                                       "venue_name": show[6],
+                                       "venue_image_link": show[4],
+                                       "start_time": show[2]
+                                       })
+
+        artist = Artist.query.filter_by(id=artist_id).first()
+        data = {
+            "id": artist.id,
+            "name": artist.name,
+            "genres": artist.genres,
+            "city": artist.city,
+            "state": artist.state,
+            "phone": artist.phone,
+            "website": artist.website_link,
+            "facebook_link": artist.facebook_link,
+            "seeking_venue": artist.seeking_venue,
+            "seeking_description": artist.seeking_description,
+            "image_link": artist.image_link,
+            "past_shows": past_shows,
+            "upcoming_shows": upcoming_shows,
+            "past_shows_count": len(past_shows),
+            "upcoming_shows_count": len(upcoming_shows)
+        }
+        print(past_shows)
     except:
         error = True
     finally:
